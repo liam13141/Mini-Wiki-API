@@ -8,9 +8,8 @@ from datetime import datetime
 app = FastAPI(title="MemoryWiki API")
 
 # In-memory page storage
-PAGES = {}  # {"slug": {"title":..., "content":..., "updated":...}}
+PAGES = {}
 
-# Developer access code
 DEV_CODE = "17731"
 
 app.add_middleware(
@@ -26,6 +25,9 @@ def slugify(text: str) -> str:
     return text.strip("-")
 
 
+# --------------------------------------------------------
+# ROOT
+# --------------------------------------------------------
 @app.get("/")
 def root():
     return {"message": "MemoryWiki API online"}
@@ -83,21 +85,38 @@ def save_page(body: dict):
 
 
 # --------------------------------------------------------
-# DEV PANEL (HTML)
+# DEV PANEL (with your CSS)
 # --------------------------------------------------------
 @app.get("/dev", response_class=HTMLResponse)
 def dev_panel(code: str = ""):
     if code != DEV_CODE:
         return """
+        <style>
+            body {
+                background:#0f172a; color:#f1f5f9;
+                font-family: Poppins, sans-serif;
+                padding:20px;
+                text-align:center;
+            }
+            input {
+                padding:8px; border-radius:6px;
+                border:none; margin-right:6px;
+            }
+            button {
+                padding:8px 14px; border:none;
+                border-radius:6px; background:#38bdf8;
+                color:#0f172a; font-weight:bold; cursor:pointer;
+            }
+        </style>
         <h2>🔒 Developer Access Required</h2>
-        <p>Enter code to access /dev:</p>
+        <p>Enter the developer access code:</p>
         <form method="get">
             <input name="code" placeholder="Enter code">
             <button type="submit">Enter</button>
         </form>
         """
 
-    # Build table of pages
+    # Build the page list HTML
     rows = ""
     for slug, info in PAGES.items():
         rows += f"""
@@ -109,7 +128,7 @@ def dev_panel(code: str = ""):
                 <form action="/dev/delete" method="post">
                     <input type="hidden" name="code" value="{DEV_CODE}">
                     <input type="hidden" name="slug" value="{slug}">
-                    <button style="background:#e11d48; color:white; padding:5px 10px; border:none; border-radius:4px;">
+                    <button style="background:#e11d48; color:white; padding:6px 12px; border:none; border-radius:6px;">
                         Delete
                     </button>
                 </form>
@@ -118,24 +137,55 @@ def dev_panel(code: str = ""):
         """
 
     return f"""
-    <h1>🛠 MemoryWiki Developer Panel</h1>
-    <p>Developer code verified.</p>
-    <h2>All Pages</h2>
+    <html>
+    <head>
+        <style>
+            body {{
+                background:#0f172a;
+                color:#f1f5f9;
+                font-family: Poppins, sans-serif;
+                padding:20px;
+            }}
+            table {{
+                width:100%;
+                border-collapse:collapse;
+                background:#1e293b;
+                border-radius:8px;
+                overflow:hidden;
+            }}
+            th, td {{
+                padding:12px;
+                border-bottom:1px solid #334155;
+            }}
+            th {{
+                background:#0f172a;
+            }}
+            h1 {{
+                text-align:center;
+                margin-bottom:20px;
+                color:#38bdf8;
+            }}
+        </style>
+    </head>
+    <body>
+        <h1>🛠 MemoryWiki Developer Panel</h1>
 
-    <table border="1" cellpadding="6" style="border-collapse:collapse;">
-        <tr>
-            <th>Title</th>
-            <th>Slug</th>
-            <th>Updated</th>
-            <th>Actions</th>
-        </tr>
-        {rows}
-    </table>
+        <table>
+            <tr>
+                <th>Title</th>
+                <th>Slug</th>
+                <th>Last Updated</th>
+                <th>Actions</th>
+            </tr>
+            {rows}
+        </table>
+    </body>
+    </html>
     """
 
 
 # --------------------------------------------------------
-# DELETE PAGE (from /dev)
+# DELETE PAGE
 # --------------------------------------------------------
 @app.post("/dev/delete")
 def dev_delete_page(slug: str = Form(...), code: str = Form(...)):
