@@ -5,6 +5,16 @@ import uvicorn
 import re
 import asyncio
 from datetime import datetime
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],        # allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],        # <-- ALLOWS OPTIONS, POST, GET, PUT, DELETE
+    allow_headers=["*"],        # <-- ALLOWS Content-Type, etc
+)
+
 
 app = FastAPI(title="MemoryWiki API")
 
