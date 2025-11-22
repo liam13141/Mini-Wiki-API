@@ -5,18 +5,19 @@ import uvicorn
 import re
 import asyncio
 from datetime import datetime
-from fastapi.middleware.cors import CORSMiddleware
 
+# FIRST create the FastAPI app
+app = FastAPI(title="MemoryWiki API")
+
+# THEN add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],        # allow all origins
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],        # <-- ALLOWS OPTIONS, POST, GET, PUT, DELETE
-    allow_headers=["*"],        # <-- ALLOWS Content-Type, etc
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-
-app = FastAPI(title="MemoryWiki API")
 
 PAGES = {}
 
