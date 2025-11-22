@@ -266,23 +266,29 @@ def slugify(text: str):
 def save_page(body: dict, background_tasks: BackgroundTasks):
     title = body.get("title", "").strip()
     content = body.get("content", "")
+    author = body.get("author", "Unknown")  # NEW
+    slug = body.get("slug")
 
     if not title:
         raise HTTPException(400, "Title required")
 
-    slug = slugify(title)
+    if not slug:
+        slug = slugify(title)
 
     PAGES[slug] = {
         "slug": slug,
         "title": title,
+        "author": author,  # NEW
         "content": content,
         "updated": datetime.now().strftime("%Y-%m-%d %H:%M")
     }
 
+    # Auto-delete toxic pages
     if contains_blocked(title) or contains_blocked(content):
         background_tasks.add_task(auto_delete_page, slug)
 
     return {"ok": True, "slug": slug}
+
 
 @app.get("/api/list")
 def list_pages():
@@ -293,6 +299,7 @@ def get_page(slug: str):
     if slug not in PAGES:
         raise HTTPException(404, "Not found")
     return {"ok": True, "page": PAGES[slug]}
+
 
 
 # ============================================================
